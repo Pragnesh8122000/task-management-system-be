@@ -1,0 +1,5 @@
+# git ignore fields
+node_modules/
+.env
+*.log
+package-lock.json

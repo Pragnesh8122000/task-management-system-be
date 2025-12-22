@@ -1,0 +1,21 @@
+{
+    "LOGIN_SUCCESS": "Login successful",
+    "FIELD_EXISTS": "{field} already exists",
+    "SOMETHING_WENT_WRONG": "Something went wrong. Please try again later.",
+    "INVALID_FIELD": "Invalid {field1} Passed",
+    "REGISTER_SUCCESS": "User registered successfully",
+    "USER_NOT_FOUND": "User not found with the provided credentials",
+    "INCORRECT_PASSWORD": "Incorrect credentials provided",
+    "DATA_CREATED_SUCCESSFULLY": "{field} created successfully",
+    "DATA_UPDATED_SUCCESSFULLY": "{field} updated successfully",
+    "DATA_DELETED_SUCCESSFULLY": "{field} deleted successfully",
+    "DATA_FETCHED_SUCCESSFULLY": "{field} fetched successfully",
+    "DATA_NOT_FOUND": "{field} not found",
+    "INVALID_TOKEN": "Invalid token provided",
+    "LOGIN_AGAIN": "Please login again to continue",
+    "ACCESS_DENIED": "You do not have permission to access this resource",
+    "STATUS_ALREADY_SET": "{field} status is already {status}",
+    "REQUIRED_FIELDS_MISSING": "Required fields are missing",
+    "DEFAULT_ROLE_NOT_FOUND": "Default user role not found",
+    "USER_DOCUMENT_FETCH_FAILED": "Failed to fetch user document after creation"
+}
