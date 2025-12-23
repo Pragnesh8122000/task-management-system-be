@@ -26,7 +26,7 @@ export const createTaskValidation = Joi.object({
     priority: Joi.string().valid('low', 'medium', 'high').messages({
         'any.only': 'Priority must be one of: low, medium, high',
     }),
-    dueDate: Joi.string().pattern(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/).messages({
+    dueDate: Joi.string().pattern(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/).allow('', null).optional().messages({
         'string.pattern.base': 'Due date must be in DD/MM/YYYY format',
     })
 });
@@ -48,7 +48,7 @@ export const updateTaskValidation = Joi.object({
     priority: Joi.string().valid('low', 'medium', 'high').optional().messages({
         'any.only': 'Priority must be one of: low, medium, high',
     }),
-    dueDate: Joi.string().pattern(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/).optional().messages({
+    dueDate: Joi.string().pattern(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/).allow('', null).optional().messages({
         'string.pattern.base': 'Due date must be in DD/MM/YYYY format',
     })
 });

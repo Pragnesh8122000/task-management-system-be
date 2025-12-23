@@ -12,24 +12,15 @@ export const authorizeUser = (permission) => async (req, res, next) => {
                 "User not authenticated"
             );
         }
-        // Fetch user role and permissions
-        const userDoc = await User.findById(user._id).lean();
-        if (!userDoc) {
-            return res.sendResponse(
-                RESPONSE_STATUS.ERROR,
-                HTTP_CODE.UNAUTHORIZED,
-                "User not found"
-            );
+
+        // Use pre-populated role and permissions from authenticateToken
+        const userPermissions = user.role?.permissions?.map(p => p.name) || [];
+
+        // Admin bypass (optional, depending on requirements, but often useful)
+        if (user.role?.name === 'admin') {
+            return next();
         }
-        const roleDoc = await Role.findById(userDoc.role).populate('permissions').lean();
-        if (!roleDoc) {
-            return res.sendResponse(
-                RESPONSE_STATUS.ERROR,
-                HTTP_CODE.FORBIDDEN,
-                "Role not found"
-            );
-        }
-        const userPermissions = roleDoc.permissions.map(p => p.name);
+
         if (!userPermissions.includes(permission)) {
             return res.sendResponse(
                 RESPONSE_STATUS.ERROR,

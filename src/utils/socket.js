@@ -55,6 +55,9 @@ export const initSocket = (server) => {
         // Store user-socket mapping in Redis
         await redis.hset("active_users", userId, socket.id);
 
+        // Join global users room
+        socket.join("users");
+
         // Join rooms based on roles
         if (roleName === USER_ROLES.ADMIN) {
             socket.join("admins");

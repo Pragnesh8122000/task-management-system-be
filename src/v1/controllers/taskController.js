@@ -1,10 +1,11 @@
 
 import { HTTP_CODE, RESPONSE_STATUS } from "../../common/constants.js";
 import logger from "../../common/logger.js";
+import mongoose from "mongoose";
 import Task from "../../models/taskModel.js";
 import { performModelQuery } from "../../utils/common.js";
 import { createTaskValidation, updateTaskValidation, taskIdValidation, getTasksValidation, updateTaskStatusValidation } from "../validators/taskValidation.js";
-import { emitTaskStatusUpdate } from "../services/taskSocketService.js";
+import { emitTaskStatusUpdate, emitTaskCreated, emitTaskUpdated, emitTaskDeleted } from "../services/taskSocketService.js";
 
 const parseCustomDate = (dateStr) => {
     if (!dateStr) return null;
@@ -47,6 +48,9 @@ export const createTask = async (req, res) => {
         const task = await performModelQuery("Task", "create", { data: taskData, session });
         await session.commitTransaction();
         session.endSession();
+
+        emitTaskCreated(task, req.user);
+
         return res.sendResponse(
             RESPONSE_STATUS.SUCCESS,
             HTTP_CODE.OK,
@@ -81,12 +85,27 @@ export const getTasks = async (req, res) => {
         const { page = 1, limit = 10, search = '' } = req.query;
 
         const query = { deletedAt: null };
+
+        // RBAC: If not admin or manager, only show assigned tasks
+        if (req.user.role?.name !== 'admin' && req.user.role?.name !== 'manager') {
+            query.assignedTo = new mongoose.Types.ObjectId(req.user._id);
+            // Also support if it's stored as string in some legacy cases, or using $in if explicit match needed
+            // But usually direct assignment matches array containment for ObjectId
+        }
+
         if (search) {
             query.$or = [
                 { title: { $regex: search, $options: 'i' } },
                 { description: { $regex: search, $options: 'i' } }
             ];
         }
+
+        console.log("getTasks Debug:", {
+            user: req.user.name,
+            role: req.user.role?.name,
+            id: req.user._id,
+            query
+        });
 
         const tasksData = await performModelQuery("Task", "read", {
             page: parseInt(page),
@@ -207,7 +226,19 @@ export const updateTask = async (req, res) => {
         if (description) updateData.description = description;
         if (priority) updateData.priority = priority;
 
-        if (dueDate) {
+        // RBAC: Check permission
+        if (req.user.role?.name !== 'admin' && req.user.role?.name !== 'manager') {
+            const isAssigned = existingTask.assignedTo.some(id => id.toString() === req.user._id.toString());
+            if (!isAssigned) {
+                return res.sendResponse(
+                    RESPONSE_STATUS.ERROR,
+                    HTTP_CODE.FORBIDDEN,
+                    "You do not have permission to update this task"
+                );
+            }
+        }
+
+        if (dueDate !== undefined) {
             updateData.dueDate = parseCustomDate(dueDate);
         }
 
@@ -243,6 +274,8 @@ export const updateTask = async (req, res) => {
             },
             { new: true }
         );
+
+        emitTaskUpdated(task, req.user);
 
         if (status && status !== existingTask.status) {
             emitTaskStatusUpdate(task, existingTask.status, status, req.user);
@@ -281,6 +314,11 @@ export const deleteTask = async (req, res) => {
             { $set: { deletedAt: new Date(), updatedBy: req.user._id } },
             { new: true }
         );
+
+        if (task) {
+            emitTaskDeleted(id, req.user);
+        }
+
         if (!task) {
             return res.sendResponse(
                 RESPONSE_STATUS.ERROR,
@@ -350,6 +388,18 @@ export const updateTaskStatus = async (req, res) => {
         //         { field: "Task", status }
         //     );
         // }
+
+        // RBAC: Check permission
+        if (req.user.role?.name !== 'admin' && req.user.role?.name !== 'manager') {
+            const isAssigned = existingTask.assignedTo.some(id => id.toString() === req.user._id.toString());
+            if (!isAssigned) {
+                return res.sendResponse(
+                    RESPONSE_STATUS.ERROR,
+                    HTTP_CODE.FORBIDDEN,
+                    "You do not have permission to update this task status"
+                );
+            }
+        }
 
         const task = await Task.findOneAndUpdate(
             { _id: id, deletedAt: null },

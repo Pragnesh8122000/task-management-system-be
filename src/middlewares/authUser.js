@@ -4,7 +4,16 @@ import User from "../models/userModel.js";
 
 export const authenticateToken = async (req, res, next) => {
     try {
-        const token = req.headers["token"];
+        const authHeader = req.headers["authorization"];
+        const tokenHeader = req.headers["token"];
+
+        let token = null;
+
+        if (authHeader && authHeader.startsWith("Bearer ")) {
+            token = authHeader.split(" ")[1];
+        } else if (tokenHeader) {
+            token = tokenHeader;
+        }
 
         if (!token || typeof token !== "string") {
             return res.sendResponse(

@@ -30,7 +30,7 @@ async function server() {
         const WEB_ADMIN_URL = "/TMSWebservices";
         const VERSIONS = ["v1"]; // Add more versions as needed
         await loadRoutes(app, WEB_ADMIN_URL, VERSIONS);
-        
+
         return app;
     } catch (error) {
         console.log(error);

@@ -1,3 +1,4 @@
+
 import { HTTP_CODE, RESPONSE_STATUS } from "../../common/constants.js";
 import Role from "../../models/roleModel.js";
 
@@ -28,6 +29,25 @@ export const createRole = async (req, res) => {
             "DATA_CREATED_SUCCESSFULLY",
             { role },
             { field: "Role" }
+        );
+    } catch (error) {
+        return res.sendResponse(
+            RESPONSE_STATUS.ERROR,
+            HTTP_CODE.INTERNAL_SERVER_ERROR,
+            "SOMETHING_WENT_WRONG"
+        );
+    }
+};
+
+export const getRoles = async (req, res) => {
+    try {
+        const roles = await Role.find().select('name description');
+        return res.sendResponse(
+            RESPONSE_STATUS.SUCCESS,
+            HTTP_CODE.OK,
+            "DATA_FETCHED_SUCCESSFULLY",
+            { roles },
+            { field: "Roles" }
         );
     } catch (error) {
         return res.sendResponse(

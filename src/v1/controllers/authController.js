@@ -86,6 +86,44 @@ export const loginUser = async (req, res) => {
     }
 }
 
+export const getUsers = async (req, res) => {
+    try {
+        const users = await User.find({ deletedAt: null })
+            .select("-password")
+            .populate({
+                path: 'role',
+                populate: { path: 'permissions' }
+            })
+            .lean();
+
+        const formattedUsers = users.map(user => ({
+            _id: user._id,
+            name: user.name,
+            email: user.email,
+            role: user.role ? {
+                _id: user.role._id,
+                name: user.role.name,
+                permissions: user.role.permissions ? user.role.permissions.map(p => p.name) : []
+            } : null
+        }));
+
+        return res.sendResponse(
+            RESPONSE_STATUS.SUCCESS,
+            HTTP_CODE.OK,
+            "DATA_FETCHED_SUCCESSFULLY",
+            { users: formattedUsers },
+            { field: "Users" }
+        );
+    } catch (error) {
+        logger.error(`Error occured while running getUsers: ${error}`);
+        return res.sendResponse(
+            RESPONSE_STATUS.ERROR,
+            HTTP_CODE.INTERNAL_SERVER_ERROR,
+            "SOMETHING_WENT_WRONG"
+        );
+    }
+};
+
 export const fetchProfile = async (req, res) => {
     try {
         const user = req.user;

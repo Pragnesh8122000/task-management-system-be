@@ -1,5 +1,6 @@
 import express from "express";
 import { createTask, getTasks, getTaskById, updateTask, deleteTask, updateTaskStatus } from "../controllers/taskController.js";
+import { getDashboardStats } from "../controllers/dashboardController.js";
 import { authorizeUser } from "../../middlewares/authorizeUser.js";
 import { authenticateToken } from "../../middlewares/authUser.js";
 
@@ -22,5 +23,8 @@ router.put("/updateTaskStatus/:id", authenticateToken, authorizeUser("task_chang
 
 // Delete a task (soft delete)
 router.delete("/deleteTask/:id", authenticateToken, authorizeUser("task_delete"), deleteTask);
+
+// Dashboard routes
+router.get("/dashboardStats", authenticateToken, getDashboardStats);
 
 export default router;

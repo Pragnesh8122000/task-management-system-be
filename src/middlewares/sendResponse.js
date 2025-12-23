@@ -42,18 +42,19 @@ export const sendResponse = (req, res, next) => {
         replaceMsgObj = {},
     ) => {
         const messages = enMessages;
-        let message = messages[messageCode] || enMessages[messageCode];
+        let message = messages[messageCode] || enMessages[messageCode] || messageCode;
         //only if replaceObj pass
-        if (Object.keys(replaceMsgObj).length > 0) {
+        if (message && typeof message === 'string' && Object.keys(replaceMsgObj).length > 0) {
             message = replaceFieldText(message, replaceMsgObj);
         }
         const responseData = {
             success,
             message: message || messageCode,
+            data,
         };
-        if (data && Object.keys(data).length > 0 && !Array.isArray(responseData.message)) {
-            responseData.data = convertKeysToSnakeCase(data);
-        }
+        // if (data && Object.keys(data).length > 0 && !Array.isArray(responseData.message)) {
+        //     responseData.data = convertKeysToSnakeCase(data);
+        // }
         res.status(statusCode).json(responseData);
     };
     return next();

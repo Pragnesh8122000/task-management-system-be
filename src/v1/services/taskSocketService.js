@@ -1,17 +1,69 @@
 import { getIO } from "../../utils/socket.js";
 
 /**
- * Emits a notification to active admins and managers when a task status is updated.
- * 
- * @param {Object} task - The updated task document.
- * @param {string} oldStatus - The status of the task before the update.
- * @param {string} newStatus - The new status of the task.
- * @param {Object} user - The user who performed the update.
+ * Emits a notification when a task is created.
+ */
+export const emitTaskCreated = (task, user) => {
+    try {
+        const io = getIO();
+        io.to("users").emit("taskCreated", {
+            task,
+            createdBy: {
+                id: user._id,
+                name: user.name
+            },
+            timestamp: new Date()
+        });
+    } catch (error) {
+        console.error("Socket Emission Failed:", error.message);
+    }
+};
+
+/**
+ * Emits a notification when a task is updated (generic).
+ */
+export const emitTaskUpdated = (task, user) => {
+    try {
+        const io = getIO();
+        io.to("users").emit("taskUpdated", {
+            task,
+            updatedBy: {
+                id: user._id,
+                name: user.name
+            },
+            timestamp: new Date()
+        });
+    } catch (error) {
+        console.error("Socket Emission Failed:", error.message);
+    }
+};
+
+/**
+ * Emits a notification when a task is deleted.
+ */
+export const emitTaskDeleted = (taskId, user) => {
+    try {
+        const io = getIO();
+        io.to("users").emit("taskDeleted", {
+            taskId,
+            deletedBy: {
+                id: user._id,
+                name: user.name
+            },
+            timestamp: new Date()
+        });
+    } catch (error) {
+        console.error("Socket Emission Failed:", error.message);
+    }
+};
+
+/**
+ * Emits a notification when a task status is updated.
  */
 export const emitTaskStatusUpdate = (task, oldStatus, newStatus, user) => {
     try {
         const io = getIO();
-        io.to("admins").to("managers").emit("TASK_STATUS_UPDATED", {
+        io.to("users").emit("taskStatusUpdated", {
             taskId: task._id,
             title: task.title,
             oldStatus,
@@ -23,7 +75,6 @@ export const emitTaskStatusUpdate = (task, oldStatus, newStatus, user) => {
             timestamp: new Date()
         });
     } catch (error) {
-        // Log error but don't break the main request flow
         console.error("Socket Emission Failed:", error.message);
     }
 };
