@@ -100,13 +100,6 @@ export const getTasks = async (req, res) => {
             ];
         }
 
-        console.log("getTasks Debug:", {
-            user: req.user.name,
-            role: req.user.role?.name,
-            id: req.user._id,
-            query
-        });
-
         const tasksData = await performModelQuery("Task", "read", {
             page: parseInt(page),
             limit: parseInt(limit),
